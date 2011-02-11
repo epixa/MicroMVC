@@ -1,0 +1,16 @@
+Epixa MicroMVC Library
+
+Copyright 2011 epixa.com - Court Ewing
+License: http://github.com/epixa/MicroMVC/blob/master/LICENSE New BSD
+Authored by Court Ewing (court@epixa.com)
+
+This MicroMVC implementation is for rapid application development.  The goal of 
+this framework is to provide a traditional MVC implementation with both speed 
+and best practices in mind.
+
+Epixa MicroMVC is not a replacement for full-fledged, feature-rich MVC 
+frameworks such as Zend Framework or Symfony; rather, this is simply an 
+alternative to be used when performance is a high priority and the great 
+flexibility of one of these powerhouses is not necessary.
+
+This requires at least PHP 5.3.3, but 5.3.5 or higher is recommended.
