@@ -7,7 +7,10 @@ namespace Micro\Bootstrap;
 
 use Micro\Request\HttpRequest,
     Micro\Response\HttpResponse,
+    Micro\Router\SimpleRouter,
     Micro\Dispatcher\MvcDispatcher,
+    Micro\View\FileView,
+    Micro\Controller\AbstractController,
     Micro\Exception\ConfigException;
 
 /**
@@ -25,15 +28,15 @@ class MvcBootstrap extends AutoBootstrap
      * Since this is an MVC request, the response and request resources are 
      * automatically added.
      * 
-     * @param string $configPath 
+     * @param string $appPath 
      */
-    public function __construct($configPath)
+    public function __construct($appPath)
     {
-        parent::__construct($configPath);
+        parent::__construct($appPath);
         
         $config = $this->getConfig();
         
-        $resources = array('request', 'response', 'dispatcher');
+        $resources = array('router', 'request', 'response', 'dispatcher');
         if (isset($config['resources']) && is_array($config['resources'])) {
             unset($config['resources'], $config['response']);
             $resources = array_merge($config['resources'], $resources);
@@ -46,6 +49,16 @@ class MvcBootstrap extends AutoBootstrap
     
     
     /**
+     * Initializes the application's router object
+     * 
+     * @return SimpleRouter
+     */
+    protected function _initRouter()
+    {
+        return new SimpleRouter();
+    }
+    
+    /**
      * Initializes the application's request object
      * 
      * @return HttpRequest
@@ -54,7 +67,14 @@ class MvcBootstrap extends AutoBootstrap
     {
         $request = new HttpRequest();
         
-        // todo: get the action and controller from the uri (router?)
+        $router = $this->bootstrapResource('router');
+        $router->setDefaultController(HttpRequest::getDefaultController());
+        $router->setDefaultAction(HttpRequest::getDefaultAction());
+        
+        $parseResult = $router->parseUri($request->getRequestUri());
+        $request->setController($parseResult->getController());
+        $request->setAction($parseResult->getAction());
+        $request->setParams($parseResult->getParams());
         
         return $request;
     }
@@ -79,13 +99,26 @@ class MvcBootstrap extends AutoBootstrap
         $config = $this->getConfig('dispatcher');
         if (isset($config['controller_path'])) {
             $path = (string)$config['controller_path'];
-        } else if (defined('APPLICATION_PATH')) {
-            $path = APPLICATION_PATH;
         } else {
-            throw new ConfigException('Cannot determine controller path');
+            $path = $this->_controllerPathFactory();
         }
         
         return new MvcDispatcher($path);
+    }
+    
+    /**
+     * Initializes the application's primary view object
+     * 
+     * @return FileView
+     */
+    protected function _initView()
+    {
+        $view = new FileView();
+        $view->setBasePath($this->_viewBasePathFactory());
+        
+        AbstractController::setDefaultView($view);
+        
+        return $view;
     }
     
     /**
@@ -98,5 +131,26 @@ class MvcBootstrap extends AutoBootstrap
         $response = $this->bootstrapResource('response');
         
         $dispatcher->dispatch($request, $response);
+    }
+    
+    
+    /**
+     * Creates the controller path based on the application path
+     * 
+     * @return string
+     */
+    protected function _controllerPathFactory()
+    {
+        return APPLICATION_PATH . '/sources/Controller';
+    }
+    
+    /**
+     * Creates the base path for view templates based on the application path
+     * 
+     * @return string
+     */
+    protected function _viewBasePathFactory()
+    {
+        return APPLICATION_PATH . '/templates';
     }
 }

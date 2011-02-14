@@ -3,7 +3,7 @@
  * Epixa MicroMVC
  */
 
-namespace Micro;
+namespace Micro\View;
 
 use Micro\Exception\ConfigException,
     InvalidArgumentException;

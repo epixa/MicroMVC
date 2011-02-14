@@ -35,13 +35,27 @@ abstract class AutoBootstrap implements Bootstrappable
     
     
     /**
-     * Load the application's config from the given file, store it, and 
-     * determine from it which resources we will be bootstrapping.
+     * Sets up the application path and environment constants and loads the 
+     * appropriate config
      * 
-     * @param string $configPath 
+     * @param string $appPath 
      */
-    public function __construct($configPath)
+    public function __construct($appPath)
     {
+        if (!defined('APPLICATION_PATH')) {
+            if (!file_exists($appPath)) {
+                throw new InvalidArgumentException(sprintf(
+                    'Application path `%s` does not exist', $appPath
+                ));
+            }
+            define('APPLICATION_PATH', $appPath);
+        }
+        
+        if (!defined('APPLICATION_ENV')) {
+            define('APPLICATION_ENV', 'production');
+        }
+        
+        $configPath = $this->_configPathFactory(APPLICATION_PATH, APPLICATION_ENV);
         $config = $this->loadConfig($configPath);
         $this->setConfig($config);
     }
@@ -164,8 +178,23 @@ abstract class AutoBootstrap implements Bootstrappable
         return $config;
     }
     
+    /**
+     * Runs the application
+     */
     abstract public function run();
     
+    
+    /**
+     * Creates the appropriate config path for the given application
+     * 
+     * @param  string $appPath
+     * @param  string $appEnv
+     * @return string
+     */
+    protected function _configPathFactory($appPath, $appEnv)
+    {
+        return $appPath . '/config/' . $appEnv . '.php';
+    }
     
     /**
      * Creates the appropriate method name for the given resource

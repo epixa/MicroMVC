@@ -85,7 +85,7 @@ class MvcDispatcher implements Dispatchable
             ));
         }
         
-        $content = $controller->$actionName();
+        $content = call_user_func_array(array($controller, $actionName), $request->getParams());
         $response->append('body', $content);
         
         $response->send();

@@ -3,33 +3,33 @@
  * Epixa MicroMVC
  */
 
-namespace Micro\Request;
+namespace Micro\Router;
 
 /**
  * @category  Epixa
- * @package   Request
+ * @package   Router
  * @copyright 2011 epixa.com - Court Ewing
  * @license   http://github.com/epixa/MicroMVC/blob/master/LICENSE New BSD
  * @author    Court Ewing (court@epixa.com)
  */
-interface RequestInterface
+interface ResultInterface
 {
     /**
-     * Gets the name of the current action
-     * 
-     * @return string
-     */
-    public function getAction();
-    
-    /**
-     * Gets the name of the current controller
+     * Gets the name of the controller
      * 
      * @return string
      */
     public function getController();
     
     /**
-     * Gets the parameters of the current request
+     * Gets the name of the action
+     * 
+     * @return string
+     */
+    public function getAction();
+    
+    /**
+     * Gets any and all additional params
      * 
      * @return array
      */
