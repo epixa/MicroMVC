@@ -5,8 +5,10 @@
 
 namespace Micro\Controller;
 
-use Micro\View,
-    Micro\Exception\ConfigException;
+use Micro\Request\RequestInterface,
+    Micro\View\Renderable,
+    Micro\Exception\ConfigException,
+    Micro\Config\ArrayConfig;
 
 /**
  * An abstract representation of an application controller
@@ -17,23 +19,45 @@ use Micro\View,
  * @license   http://github.com/epixa/MicroMVC/blob/master/LICENSE New BSD
  * @author    Court Ewing (court@epixa.com)
  */
-abstract class AbstractController
+abstract class AbstractController implements ControllerInterface
 {
     /**
-     * @var null|View
+     * @var null|Renderable
      */
     protected static $_defaultView = null;
     
     /**
-     * @var null|View
+     * @var null|Renderable
      */
     protected $_view = null;
-    
-    
+
+    /**
+     * @var null|RequestInterface
+     */
+    protected $_request = null;
+
+    /**
+     * @var null|ArrayConfig
+     */
+    protected $_config = null;
+
+
+    /**
+     * Constructor
+     *
+     * Sets up the controller
+     *
+     * @param RequestInterface $request
+     */
+    public function __construct(RequestInterface $request)
+    {
+        $this->setRequest($request);
+    }
+
     /**
      * Gets the controller's default view
      * 
-     * @return View
+     * @return Renderable
      * @throws ConfigException If no default view is configured
      */
     public static function getDefaultView()
@@ -48,9 +72,9 @@ abstract class AbstractController
     /**
      * Sets the controller's default view
      * 
-     * @param View $view
+     * @param Renderable $view
      */
-    public static function setDefaultView(View $view)
+    public static function setDefaultView(Renderable $view)
     {
         self::$_defaultView = $view;
     }
@@ -58,7 +82,7 @@ abstract class AbstractController
     /**
      * Gets the controller's view
      * 
-     * @return View
+     * @return Renderable
      */
     public function getView()
     {
@@ -72,13 +96,59 @@ abstract class AbstractController
     /**
      * Sets the controller's view
      * 
-     * @param  View $view
+     * @param  Renderable $view
      * @return AbstractController *Fluent interface*
      */
-    public function setView(View $view)
+    public function setView(Renderable $view)
     {
         $this->_view = $view;
         
+        return $this;
+    }
+
+    /**
+     * Gets the currently dispatched request
+     *
+     * @return RequestInterface
+     */
+    public function getRequest()
+    {
+        return $this->_request;
+    }
+
+    /**
+     * Sets the currently dispatched request
+     *
+     * @param  RequestInterface $request
+     * @return AbstractController *Fluent interface*
+     */
+    public function setRequest(RequestInterface $request)
+    {
+        $this->_request = $request;
+
+        return $this;
+    }
+
+    /**
+     * Gets the controller config
+     *
+     * @return ArrayObject
+     */
+    public function getConfig()
+    {
+        return $this->_config;
+    }
+
+    /**
+     * Sets the controller config
+     *
+     * @param  ArrayConfig $config
+     * @return AbstractController *Fluent interface*
+     */
+    public function setConfig(ArrayConfig $config)
+    {
+        $this->_config = $config;
+
         return $this;
     }
 }

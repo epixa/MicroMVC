@@ -9,6 +9,8 @@ use Micro\Request\RequestInterface,
     Micro\Response\ResponseInterface,
     Micro\Exception\ConfigException,
     Micro\Exception\NotFoundException,
+    Micro\Config\ArrayConfig,
+    Micro\Controller\ControllerInterface,
     LogicException;
 
 /**
@@ -24,6 +26,11 @@ class MvcDispatcher implements Dispatchable
      * @var null|string
      */
     protected $_controllerPath = null;
+
+    /**
+     * @var ArrayConfig
+     */
+    protected $_controllerConfig;
     
     
     /**
@@ -31,11 +38,14 @@ class MvcDispatcher implements Dispatchable
      * 
      * Configures the directory path for application controllers
      * 
-     * @param string $controllerPath 
+     * @param string           $controllerPath
+     * @param null|ArrayConfig $controllerPath
      */
-    public function __construct($controllerPath)
+    public function __construct($controllerPath, $controllerConfig = null)
     {
         $this->setControllerPath($controllerPath);
+
+        $this->setControllerConfig($controllerConfig ?: new ArrayConfig(array()));
     }
     
     /**
@@ -64,6 +74,29 @@ class MvcDispatcher implements Dispatchable
         
         return $this->_controllerPath;
     }
+
+    /**
+     * Sets the config for all dispatched controllers
+     *
+     * @param  ArrayConfig $config
+     * @return MvcDispatcher *Fluent interface*
+     */
+    public function setControllerConfig(ArrayConfig $config)
+    {
+        $this->_controllerConfig = $config;
+
+        return $this;
+    }
+
+    /**
+     * Gets the config for all dispatched controllers
+     *
+     * @return string
+     */
+    public function getControllerConfig()
+    {
+        return $this->_controllerConfig;
+    }
     
     /**
      * Dispatches the given request, appending returned controller values to 
@@ -76,15 +109,16 @@ class MvcDispatcher implements Dispatchable
     {
         $actionName = $this->_formatActionName($request->getAction());
         $controllerName = $this->_formatControllerName($request->getController());
-        $controller = $this->loadController($controllerName);
-        
+        $controller = $this->loadController($controllerName, $request);
+        $controller->setConfig($this->getControllerConfig());
+
         if (!method_exists($controller, $actionName)) {
             throw new NotFoundException(
-                sprintf('Action `%s` does not exist in controller `%s`', 
+                sprintf('Action method `%s` does not exist in controller `%s`',
                 $actionName, $controllerName
             ));
         }
-        
+
         $content = call_user_func_array(array($controller, $actionName), $request->getParams());
         $response->append('body', $content);
         
@@ -94,10 +128,11 @@ class MvcDispatcher implements Dispatchable
     /**
      * Instantiates and returns a controller by the unqualified class name
      * 
-     * @param  string $name
+     * @param  string           $name
+     * @param  RequestInterface $request
      * @return AbstractController
      */
-    public function loadController($name)
+    public function loadController($name, $request)
     {
         $path = $this->_getControllerFilePath($name);
         if (!file_exists($path)) {
@@ -115,8 +150,15 @@ class MvcDispatcher implements Dispatchable
                 'Controller class `%s` does not exist', $className
             ));
         }
+
+        $controller = new $className($request);
+        if (!$controller instanceof ControllerInterface) {
+            throw new LogicException(sprintf(
+                'Class `%s` is not a valid controller', $className
+            ));
+        }
         
-        return new $className();
+        return $controller;
     }
     
     
@@ -141,6 +183,18 @@ class MvcDispatcher implements Dispatchable
     protected function _getControllerFilePath($className)
     {
         return $this->getControllerPath() . DIRECTORY_SEPARATOR . $className . '.php';
+    }
+
+    /**
+     * Given the raw name of an action, formats the result into the appropriate
+     * method name
+     *
+     * @param  string $controller
+     * @return string
+     */
+    protected function _formatActionName($action)
+    {
+        return str_replace(' ', '', ucwords(str_replace('-', ' ', $action))) . 'Action';
     }
     
     /**

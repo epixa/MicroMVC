@@ -95,18 +95,22 @@ class SimpleRouter implements RouterInterface
     public function parseUri($uri)
     {
         $uri = trim($uri, '/');
-        $segments = explode('/', $uri);
-        
-        $action = array_shift($segments);
-        if ($action === null) {
-            $action = $this->getDefaultAction();
+
+        $segments = array();
+        if ($uri !== '') {
+            $segments = explode('/', $uri);
         }
-        
+
         $controller = array_shift($segments);
         if ($controller === null) {
             $controller = $this->getDefaultController();
         }
-        
+
+        $action = array_shift($segments);
+        if ($action === null) {
+            $action = $this->getDefaultAction();
+        }
+
         return new ParseResult($controller, $action, $segments);
     }
 }

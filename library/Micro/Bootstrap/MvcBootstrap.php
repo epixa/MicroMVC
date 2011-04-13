@@ -11,7 +11,9 @@ use Micro\Request\HttpRequest,
     Micro\Dispatcher\MvcDispatcher,
     Micro\View\FileView,
     Micro\Controller\AbstractController,
-    Micro\Exception\ConfigException;
+    Micro\Exception\ConfigException,
+    Micro\Config\ArrayConfig,
+    Exception;
 
 /**
  * @category  Epixa
@@ -36,13 +38,10 @@ class MvcBootstrap extends AutoBootstrap
         
         $config = $this->getConfig();
         
-        $resources = array('router', 'request', 'response', 'dispatcher');
-        if (isset($config['resources']) && is_array($config['resources'])) {
-            unset($config['resources'], $config['response']);
-            $resources = array_merge($config['resources'], $resources);
+        $resources = array('router', 'request', 'response', 'dispatcher', 'view');
+        if (isset($config->resources) && $config->resources instanceof ArrayConfig) {
+            $resources = array_merge($config->resources->toArray(), $resources);
         }
-        
-        unset($config['resources']);
         
         $this->setResources($resources);
     }
@@ -96,14 +95,14 @@ class MvcBootstrap extends AutoBootstrap
      */
     protected function _initDispatcher()
     {
-        $config = $this->getConfig('dispatcher');
-        if (isset($config['controller_path'])) {
-            $path = (string)$config['controller_path'];
+        $config = $this->getConfig()->dispatcher;
+        if (isset($config->controllerPath)) {
+            $path = (string)$config->controllerPath;
         } else {
             $path = $this->_controllerPathFactory();
         }
         
-        return new MvcDispatcher($path);
+        return new MvcDispatcher($path, $this->getConfig()->controller);
     }
     
     /**
@@ -129,8 +128,15 @@ class MvcBootstrap extends AutoBootstrap
         $dispatcher = $this->bootstrapResource('dispatcher');
         $request = $this->bootstrapResource('request');
         $response = $this->bootstrapResource('response');
-        
-        $dispatcher->dispatch($request, $response);
+
+        try {
+            $dispatcher->dispatch($request, $response);
+        } catch (Exception $e) {
+            $request->setAction('default');
+            $request->setController('error');
+            $request->setParams(array($e, $request->getParams()));
+            $dispatcher->dispatch($request, $response);
+        }
     }
     
     
@@ -141,7 +147,7 @@ class MvcBootstrap extends AutoBootstrap
      */
     protected function _controllerPathFactory()
     {
-        return APPLICATION_PATH . '/sources/Controller';
+        return APPLICATION_PATH . '/source/Controller';
     }
     
     /**

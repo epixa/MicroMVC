@@ -5,7 +5,9 @@
 
 namespace Micro\Bootstrap;
 
-use InvalidArgumentException,
+use Micro\Config\ArrayConfig,
+    Micro\Exception\ConfigException,
+    InvalidArgumentException,
     LogicException;
 
 /**
@@ -63,10 +65,10 @@ abstract class AutoBootstrap implements Bootstrappable
     /**
      * Sets the application's config
      * 
-     * @param  array $config
+     * @param  ArrayConfig $config
      * @return AutoBootstrap *Fluent interface*
      */
-    public function setConfig(array $config)
+    public function setConfig(ArrayConfig $config)
     {
         $this->_config = $config;
         
@@ -143,7 +145,7 @@ abstract class AutoBootstrap implements Bootstrappable
         if (!array_key_exists($resource, $this->_bootstrappedResources)) {
             $method = $this->_resourceMethodFactory($resource);
             if (!method_exists($this, $method)) {
-                throw new InvalidArgumentException(sprintf(
+                throw new ConfigException(sprintf(
                     'Bootstrapping resource `%s` does not exist', $resource
                 ));
             }
@@ -158,7 +160,7 @@ abstract class AutoBootstrap implements Bootstrappable
      * Load an array configuration from the given file path
      * 
      * @param  string $configPath
-     * @return array
+     * @return ArrayConfig
      * @throws InvalidArgumentException If the config file does not exist
      * @throws LogicException           If the file does not return an array
      */
@@ -175,7 +177,7 @@ abstract class AutoBootstrap implements Bootstrappable
             throw new LogicException('Invalid config format');
         }
         
-        return $config;
+        return new ArrayConfig($config);
     }
     
     /**

@@ -31,7 +31,7 @@ class FileView implements Renderable
      * @var boolean
      */
     private $_isRendering = false;
-    
+
     
     /**
      * Ensures that any non-existing key returns null if and only if we are 
@@ -64,7 +64,7 @@ class FileView implements Renderable
         if (strpos($name, '_') === 0) {
             trigger_error('Cannot set protected or private properties', E_USER_WARNING);
         }
-        
+
         $this->$name = $value;
     }
     
@@ -77,7 +77,7 @@ class FileView implements Renderable
     public function setBasePath($path)
     {
         $ds = DIRECTORY_SEPARATOR;
-        $this->_basePath = rtrim((string)$path, $ds) . $ds;
+        $this->_basePath = rtrim((string)$path, $ds);
         
         return $this;
     }
@@ -132,11 +132,11 @@ class FileView implements Renderable
     public function render($name)
     {
         $this->assertNoParentTraversal($name);
-        
+
         ob_start();
         
         $this->_isRendering = true;
-        $this->_includeFile($this->_getScriptPath($name));
+        $this->_includeFile($this->_createScriptPath($name));
         $this->_isRendering = false;
         
         return ob_get_clean();

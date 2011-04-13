@@ -5,7 +5,7 @@
 
 namespace Micro\Request;
 
-use InvalidArgumentException;
+use InvalidArgumentException,
     Micro\Exception\NotFoundException;
 
 /**

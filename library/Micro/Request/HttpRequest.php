@@ -23,6 +23,16 @@ class HttpRequest extends AbstractRequest
     {
         return $this->getServer('REQUEST_METHOD');
     }
+
+    /**
+     * Gets the current request uri
+     * 
+     * @return string
+     */
+    public function getRequestUri()
+    {
+        return $this->getServer('REQUEST_URI');
+    }
     
     /**
      * Is the current request of method POST?

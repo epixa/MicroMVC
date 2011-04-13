@@ -1,0 +1,10 @@
+
+    <section>
+        <h1>An unknown error has occurred</h1>
+
+        <p>What did you do?!</p>
+    </section>
+
+    <?php if ($this->exception): ?>
+        <?php echo $this->render('error/debug/exception'); ?>
+    <?php endif; ?>

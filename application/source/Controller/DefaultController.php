@@ -18,6 +18,6 @@ class DefaultController extends AbstractController
 {
     public function defaultAction()
     {
-        return $this->getView()->render();
+        return $this->getView()->render('default/default');
     }
 }
