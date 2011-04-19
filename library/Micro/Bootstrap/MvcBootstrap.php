@@ -9,6 +9,8 @@ use Micro\Request\HttpRequest,
     Micro\Response\HttpResponse,
     Micro\Router\SimpleRouter,
     Micro\Dispatcher\MvcDispatcher,
+    Micro\Database\Adapter\MysqlDriver,
+    Micro\Model\AbstractDbModel,
     Micro\View\FileView,
     Micro\Controller\AbstractController,
     Micro\Exception\ConfigException,
@@ -118,6 +120,31 @@ class MvcBootstrap extends AutoBootstrap
         AbstractController::setDefaultView($view);
         
         return $view;
+    }
+
+    /**
+     * Initializes the application's primary database connection
+     *
+     * @return HttpResponse
+     */
+    protected function _initDatabase()
+    {
+        $config = $this->getConfig('database');
+        if ($config === null) {
+            throw new ConfigException('No database config set');
+        }
+
+        $adapter = new MysqlDriver();
+        $adapter->setConnectionInfo(
+            $config->dsnParams ? $config->dsnParams->toArray() : array(),
+            $config->username,
+            $config->password,
+            $config->driverOptions ? $config->driverOptions->toArray() : array()
+        );
+
+        AbstractDbModel::setDefaultAdapter($adapter);
+        
+        return $adapter;
     }
     
     /**

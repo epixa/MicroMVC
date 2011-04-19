@@ -9,5 +9,16 @@ return array(
         'debug' => array(
             'renderExceptions' => true
         )
+    ),
+    'resources' => array(
+        'database'
+    ),
+    'database' => array(
+        'dsnParams' => array(
+            'host' => 'localhost',
+            'dbname' => 'microdb'
+        ),
+        'username' => 'dbuser',
+        'password' => 'dbpass'
     )
 );

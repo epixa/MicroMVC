@@ -5,7 +5,8 @@
 
 namespace Micro\Config;
 
-use IteratorAggregate,
+use ArrayAccess,
+    IteratorAggregate,
     Serializable;
 
 /**
@@ -15,7 +16,7 @@ use IteratorAggregate,
  * @license   http://github.com/epixa/MicroMVC/blob/master/LICENSE New BSD
  * @author    Court Ewing (court@epixa.com)
  */
-class ArrayConfig implements IteratorAggregate, Serializable
+class ArrayConfig implements ArrayAccess, IteratorAggregate, Serializable
 {
     /**
      * @var array
@@ -145,5 +146,48 @@ class ArrayConfig implements IteratorAggregate, Serializable
     public function getIterator()
     {
         return new ArrayIterator($this->_data);
+    }
+
+    /**
+     * From ArrayAccess
+     * 
+     * @param mixed $offset
+     * @param mixed $value
+     */
+    public function offsetSet($offset, $value)
+    {
+        $this->__set($offset, $value);
+    }
+
+    /**
+     * From ArrayAccess
+     *
+     * @param  mixed $offset
+     * @return boolean
+     */
+    public function offsetExists($offset)
+    {
+        return $this->__isset($offset);
+    }
+
+    /**
+     * From ArrayAccess
+     *
+     * @param mixed $offset
+     */
+    public function offsetUnset($offset)
+    {
+        $this->__unset($offset);
+    }
+
+    /**
+     * From ArrayAccess
+     *
+     * @param  mixed $offset
+     * @return mixed
+     */
+    public function offsetGet($offset)
+    {
+        return $this->__get($offset);
     }
 }
